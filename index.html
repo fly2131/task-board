@@ -210,7 +210,14 @@ function renderTasks() {
     var sl = {todo:'待办',progress:'进行中',done:'已完成'}[t.status]||'待办';
     var sc = {todo:'todo',progress:'progress',done:'done'}[t.status]||'todo';
     var logs = parseLog(t.progress);
-    var logHtml = logs.length ? '<ul class="log-list">' + logs.map(function(l){ return '<li>'+esc(l)+'</li>'; }).join('') + '</ul>' : '';
+    var logHtml = '';
+    if (logs.length > 0) {
+      var show = logs.slice(0, 3);
+      logHtml = '<ul class="log-list">' + show.map(function(l){ return '<li>'+esc(l)+'</li>'; }).join('') + '</ul>';
+      if (logs.length > 3) {
+        logHtml += '<div style="font-size:12px;color:#3498db;margin-top:4px;">…共'+logs.length+'条记录，点击查看全部</div>';
+      }
+    }
     return '<div class="task-card '+cls+'" onclick="editTask('+t.id+')">'
       + '<div class="top"><span class="title">'+esc(t.title)+'</span><span class="badge badge-'+pc+'">'+pl+'</span></div>'
       + (t.content ? '<div class="content-preview">'+esc(t.content)+'</div>' : '')
