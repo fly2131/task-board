@@ -86,7 +86,7 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 <div id="appContent" style="display:none;">
 
 <div class="header">
-  <h1>📋 部门任务看板<span style="float:right;font-size:13px;cursor:pointer;opacity:0.7;" onclick="showChangePin()">🔐 改密</span></h1>
+  <h1>📋 部门任务看板<span style="float:right;font-size:13px;cursor:pointer;opacity:0.7;">📥 <span onclick="exportCSV()" style="margin-right:12px;">导出</span>🔐 <span onclick="showChangePin()">改密</span></span></h1>
   <div class="sub" id="updateTime"></div>
 </div>
 
@@ -352,6 +352,27 @@ async function checkPin(pin) {
     err.style.display = 'none';
   });
 })();
+
+function exportCSV() {
+  var BOM = '﻿';
+  var headers = ['标题','经办人','任务内容','优先级','状态','截止日期','任务记录','创建时间','更新时间'];
+  var rows = tasks.map(function(t){
+    return [
+      t.title, t.assignee, t.content||'', t.priority, t.status, t.deadline||'',
+      (t.progress||'').replace(/\n/g,' | '), t.created_at||'', t.updated_at||''
+    ];
+  });
+  var csv = BOM + headers.join(',') + '\n' + rows.map(function(r){
+    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '任务导出_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function showChangePin() {
   var oldPin = prompt('请输入当前密码：');
