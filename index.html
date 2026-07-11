@@ -127,7 +127,16 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
     <select id="fStatus"><option value="todo">待办</option><option value="progress">进行中</option><option value="done">已完成</option></select>
   </div>
   <div class="form-group"><label>截止日期</label><input id="fDeadline" type="date"></div>
-  <div class="form-group"><label>新增任务记录</label><textarea id="fLog" placeholder="记录当前进展&#10;如：已联系客户确认方案"></textarea></div>
+
+  <!-- 任务记录区 -->
+  <div class="form-group" id="logSection" style="display:none;">
+    <label>任务记录</label>
+    <div id="logList" style="margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="fLog" placeholder="新增一条记录…" style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+      <button onclick="addLogEntry()" style="padding:8px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:13px;white-space:nowrap;">添加</button>
+    </div>
+  </div>
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="closeModal()">取消</button>
     <button class="btn btn-primary" onclick="saveTask()">保存</button>
@@ -148,7 +157,7 @@ var API_SETTINGS = BASE + '/settings';
 var KEY = 'sb_publishable_UAUDiBPQw1pX9lpDHawFlg_A5aY6k3l';
 function hdrs() { return { apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json' }; }
 
-var tasks=[], currentFilter='all', currentAssignee='all';
+var tasks=[], currentFilter='all', currentAssignee='all', logEntries=[];
 
 async function loadTasks() {
   try {
@@ -241,6 +250,8 @@ function openAddModal() {
   document.getElementById('fStatus').value = 'todo';
   document.getElementById('fDeadline').value = '';
   document.getElementById('fLog').value = '';
+  logEntries = [];
+  document.getElementById('logSection').style.display = 'none';
   document.getElementById('deleteRow').style.display = 'none';
   document.getElementById('modal').classList.add('show');
 }
@@ -257,18 +268,52 @@ function editTask(id) {
   document.getElementById('fStatus').value = t.status;
   document.getElementById('fDeadline').value = t.deadline || '';
   document.getElementById('fLog').value = '';
+  logEntries = parseLog(t.progress);
+  document.getElementById('logSection').style.display = 'block';
+  renderLogList();
   document.getElementById('deleteRow').style.display = 'flex';
   document.getElementById('modal').classList.add('show');
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
+// 日志管理
+function renderLogList() {
+  var container = document.getElementById('logList');
+  if (!logEntries.length) { container.innerHTML = '<p style="color:#aaa;font-size:13px;">暂无记录</p>'; return; }
+  container.innerHTML = logEntries.map(function(entry, i){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px;">'
+      + '<span style="flex:1;">'+esc(entry)+'</span>'
+      + '<span onclick="removeLogEntry('+i+')" style="color:#e74c3c;cursor:pointer;margin-left:8px;font-size:18px;line-height:1;">×</span>'
+      + '</div>';
+  }).join('');
+}
+
+function addLogEntry() {
+  var input = document.getElementById('fLog');
+  var text = input.value.trim();
+  if (!text) return;
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '
+    + String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  logEntries.unshift('['+ts+'] '+text);
+  input.value = '';
+  renderLogList();
+}
+
+function removeLogEntry(i) {
+  logEntries.splice(i, 1);
+  renderLogList();
+}
+
 async function saveTask() {
   var id = document.getElementById('editId').value;
   var title = document.getElementById('fTitle').value.trim();
   var assignee = document.getElementById('fAssignee').value.trim();
   if (!title || !assignee) { alert('任务标题和经办人为必填项'); return; }
-  var newLog = document.getElementById('fLog').value.trim();
+  // 收集日志中新增但未添加的内容
+  var pending = document.getElementById('fLog').value.trim();
+  if (pending) addLogEntry();
   var payload = {
     title: title,
     assignee: assignee,
@@ -276,25 +321,9 @@ async function saveTask() {
     priority: document.getElementById('fPriority').value,
     status: document.getElementById('fStatus').value,
     deadline: document.getElementById('fDeadline').value || null,
+    progress: logEntries.join('\n'),
     updated_at: new Date().toISOString()
   };
-
-  // 处理任务记录：条目式追加
-  if (newLog) {
-    var now = new Date();
-    var ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '
-      + String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    var entry = '['+ts+'] '+newLog;
-    if (id) {
-      var old = tasks.find(function(x){ return x.id===parseInt(id); });
-      var oldLog = (old && old.progress) ? old.progress : '';
-      payload.progress = entry + '\n' + oldLog;
-    } else {
-      payload.progress = entry;
-    }
-  } else if (!id) {
-    payload.progress = '';
-  }
 
   try {
     var res;
