@@ -118,6 +118,15 @@ body {
 </head>
 <body>
 
+<!-- PIN 密码保护 -->
+<div id="lockScreen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#1a1a2e; color:#fff; text-align:center; padding:20px;">
+  <h2 style="margin-bottom:8px;">📋 部门任务看板</h2>
+  <p style="color:#8892a4; margin-bottom:20px;">请输入访问密码</p>
+  <input id="pinInput" type="password" placeholder="输入密码" style="padding:10px 16px; border-radius:8px; border:none; font-size:16px; width:200px; text-align:center; outline:none;">
+  <p id="pinError" style="color:#e74c3c; margin-top:10px; font-size:13px; display:none;">密码错误</p>
+</div>
+
+<div id="appContent" style="display:none;">
 <div class="header">
   <h1>📋 部门任务看板</h1>
   <div class="sub" id="updateTime"></div>
@@ -358,8 +367,27 @@ document.getElementById('modal').addEventListener('click', function(e) {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-// 启动
-loadTasks();
+// ===== PIN 密码验证 =====
+const APP_PIN = '8888';
+(function(){
+  var input = document.getElementById('pinInput');
+  var err = document.getElementById('pinError');
+  input.focus();
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') {
+      if (input.value === APP_PIN) {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        loadTasks();
+      } else {
+        err.style.display = 'block';
+        input.value = '';
+      }
+    }
+    err.style.display = 'none';
+  });
+})();
 </script>
+</div>
 </body>
 </html>
