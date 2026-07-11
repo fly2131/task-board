@@ -128,7 +128,7 @@ body {
 
 <div id="appContent" style="display:none;">
 <div class="header">
-  <h1>📋 部门任务看板</h1>
+  <h1>📋 部门任务看板<span style="float:right; font-size:13px; cursor:pointer; opacity:0.7;" onclick="showChangePin()" title="修改密码">🔐 改密</span></h1>
   <div class="sub" id="updateTime"></div>
 </div>
 
@@ -194,7 +194,9 @@ body {
 
 <script>
 // ===== Supabase 配置 =====
-const API = 'https://axnoahxxfeadkondeehl.supabase.co/rest/v1/tasks';
+const BASE = 'https://axnoahxxfeadkondeehl.supabase.co/rest/v1';
+const API = BASE + '/tasks';
+const API_SETTINGS = BASE + '/settings';
 const KEY = 'sb_publishable_UAUDiBPQw1pX9lpDHawFlg_A5aY6k3l';
 function headers() {
   return { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
@@ -368,14 +370,24 @@ document.getElementById('modal').addEventListener('click', function(e) {
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ===== PIN 密码验证 =====
-const APP_PIN = '8888';
+let APP_PIN = null;
+
+async function checkPin(pin) {
+  try {
+    const res = await fetch(API_SETTINGS + '?key=eq.app_pin&select=value', { headers: headers() });
+    const data = await res.json();
+    APP_PIN = data[0]?.value || '8888';
+  } catch(e) { APP_PIN = '8888'; }
+  return pin === APP_PIN;
+}
+
 (function(){
   var input = document.getElementById('pinInput');
   var err = document.getElementById('pinError');
   input.focus();
-  input.addEventListener('keydown', function(e){
+  input.addEventListener('keydown', async function(e){
     if (e.key === 'Enter') {
-      if (input.value === APP_PIN) {
+      if (await checkPin(input.value)) {
         document.getElementById('lockScreen').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
         loadTasks();
@@ -387,6 +399,26 @@ const APP_PIN = '8888';
     err.style.display = 'none';
   });
 })();
+
+// ===== 改密 =====
+function showChangePin() {
+  var oldPin = prompt('请输入当前密码：');
+  if (!oldPin) return;
+  if (oldPin !== APP_PIN) { alert('密码错误！'); return; }
+  var newPin = prompt('请输入新密码（4-8位数字）：');
+  if (!newPin || newPin.length < 4 || !/^\d+$/.test(newPin)) { alert('密码格式不正确，需4-8位数字'); return; }
+  var again = prompt('再次输入新密码确认：');
+  if (newPin !== again) { alert('两次输入不一致'); return; }
+  // 更新数据库中的密码
+  fetch(API_SETTINGS + '?key=eq.app_pin', {
+    method: 'PATCH',
+    headers: {...headers(), Prefer: 'return=representation'},
+    body: JSON.stringify({ value: newPin })
+  }).then(function(r){
+    if (r.ok) { APP_PIN = newPin; alert('密码修改成功！'); }
+    else { alert('修改失败，请重试'); }
+  }).catch(function(){ alert('网络错误，修改失败'); });
+}
 </script>
 </div>
 </body>
