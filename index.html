@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>部门任务看板</title>
+<!-- 纯 fetch，零外部依赖 -->
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f6f8; color:#333; min-height:100vh; padding-bottom:80px;
+}
+
+/* 顶部栏 */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color:#fff; padding:16px 20px; position:sticky; top:0; z-index:100;
+}
+.header h1 { font-size:20px; font-weight:600; }
+.header .sub { font-size:12px; color:#8892a4; margin-top:2px; }
+
+/* 统计卡片 */
+.stats { display:flex; gap:10px; padding:12px 16px; overflow-x:auto; }
+.stat-card {
+  flex:1; min-width:80px; background:#fff; border-radius:10px;
+  padding:12px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.stat-card .num { font-size:24px; font-weight:700; }
+.stat-card .label { font-size:11px; color:#888; margin-top:2px; }
+.stat-card.red .num { color:#e74c3c; }
+.stat-card.orange .num { color:#f39c12; }
+.stat-card.blue .num { color:#3498db; }
+.stat-card.green .num { color:#27ae60; }
+
+/* 筛选区 */
+.filter-bar { display:flex; gap:8px; padding:0 16px 12px; flex-wrap:wrap; }
+.filter-bar button {
+  padding:6px 14px; border-radius:20px; border:1px solid #ddd;
+  background:#fff; font-size:13px; cursor:pointer; white-space:nowrap;
+  transition: all 0.2s;
+}
+.filter-bar button.active { background:#1a1a2e; color:#fff; border-color:#1a1a2e; }
+
+/* 任务列表 */
+.task-list { padding:0 16px; }
+.task-card {
+  background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); cursor:pointer;
+  border-left:4px solid transparent; transition: transform 0.15s;
+}
+.task-card:active { transform:scale(0.98); }
+.task-card.overdue { border-left-color:#e74c3c; background:#fff5f5; }
+.task-card.todo { border-left-color:#3498db; }
+.task-card.progress { border-left-color:#f39c12; }
+.task-card.done { border-left-color:#27ae60; opacity:0.75; }
+
+.task-card .top { display:flex; justify-content:space-between; align-items:flex-start; }
+.task-card .title { font-size:15px; font-weight:600; flex:1; }
+.task-card .meta { display:flex; gap:8px; margin-top:8px; font-size:12px; color:#888; flex-wrap:wrap; }
+.badge {
+  display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:500;
+}
+.badge-urgent { background:#ffe0e0; color:#c0392b; }
+.badge-important { background:#fff3cd; color:#b8860b; }
+.badge-normal { background:#e8f4fd; color:#2c6faa; }
+.badge-todo { background:#e8f4fd; color:#2980b9; }
+.badge-progress { background:#fff3cd; color:#e67e22; }
+.badge-done { background:#d5f5e3; color:#1e8449; }
+.progress-text { font-size:12px; color:#555; margin-top:4px; font-style:italic; }
+.task-card .deadline { font-size:12px; }
+.task-card .deadline.overdue-text { color:#e74c3c; font-weight:600; }
+
+/* 浮动按钮 */
+.fab {
+  position:fixed; bottom:24px; right:20px; width:52px; height:52px;
+  background:linear-gradient(135deg, #1a1a2e, #16213e); color:#fff;
+  border:none; border-radius:50%; font-size:28px; cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:200;
+}
+
+/* 弹窗 */
+.modal-overlay {
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.4); z-index:300; justify-content:center; align-items:flex-end;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:#fff; width:100%; max-width:500px; max-height:90vh; overflow-y:auto;
+  border-radius:16px 16px 0 0; padding:20px;
+}
+.modal h2 { font-size:18px; margin-bottom:16px; }
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; font-size:13px; color:#555; margin-bottom:4px; font-weight:500; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  font-size:14px; outline:none; transition:border 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#1a1a2e; }
+.form-group textarea { height:70px; resize:none; }
+.btn-row { display:flex; gap:10px; margin-top:16px; }
+.btn {
+  flex:1; padding:12px; border:none; border-radius:8px; font-size:15px;
+  cursor:pointer; font-weight:500; transition:opacity 0.2s;
+}
+.btn:active { opacity:0.8; }
+.btn-primary { background:#1a1a2e; color:#fff; }
+.btn-danger { background:#fff; color:#e74c3c; border:1px solid #e74c3c; }
+.btn-secondary { background:#f0f0f0; color:#555; }
+
+/* 空状态 */
+.empty { text-align:center; padding:40px 20px; color:#aaa; }
+.empty .icon { font-size:48px; margin-bottom:8px; }
+
+/* 加载 */
+.loading { text-align:center; padding:20px; color:#aaa; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 部门任务看板</h1>
+  <div class="sub" id="updateTime"></div>
+</div>
+
+<div class="stats">
+  <div class="stat-card red"><div class="num" id="countUrgent">0</div><div class="label">紧急</div></div>
+  <div class="stat-card orange"><div class="num" id="countProgress">0</div><div class="label">进行中</div></div>
+  <div class="stat-card blue"><div class="num" id="countTodo">0</div><div class="label">待办</div></div>
+  <div class="stat-card green"><div class="num" id="countDone">0</div><div class="label">已完成</div></div>
+</div>
+
+<div class="filter-bar">
+  <button data-filter="all" class="active">全部</button>
+  <button data-filter="todo">待办</button>
+  <button data-filter="progress">进行中</button>
+  <button data-filter="done">已完成</button>
+  <button data-filter="urgent">🔴 紧急</button>
+</div>
+
+<div class="filter-bar" style="margin-top:-4px;">
+  <button data-assignee="all" class="active assignee-btn">所有人</button>
+</div>
+
+<div class="task-list" id="taskList">
+  <div class="loading">加载中...</div>
+</div>
+
+<button class="fab" onclick="openAddModal()" title="新增任务">+</button>
+
+<!-- 新增/编辑弹窗 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle">新增任务</h2>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label>任务标题 *</label><input id="fTitle" placeholder="做什么？"></div>
+    <div class="form-group"><label>经办人 *</label><input id="fAssignee" placeholder="填写姓名"></div>
+    <div class="form-group">
+      <label>优先级</label>
+      <select id="fPriority">
+        <option value="urgent">🔴 紧急</option>
+        <option value="important">🟡 重要</option>
+        <option value="normal" selected>🔵 日常</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>状态</label>
+      <select id="fStatus">
+        <option value="todo">待办</option>
+        <option value="progress">进行中</option>
+        <option value="done">已完成</option>
+      </select>
+    </div>
+    <div class="form-group"><label>截止日期</label><input id="fDeadline" type="date"></div>
+    <div class="form-group"><label>进度备注</label><textarea id="fProgress" placeholder="当前进展、遇到的问题等"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveTask()">保存</button>
+    </div>
+    <div class="btn-row" id="deleteRow" style="display:none;">
+      <button class="btn btn-danger" onclick="deleteTask()">删除此任务</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Supabase 配置 =====
+const API = 'https://axnoahxxfeadkondeehl.supabase.co/rest/v1/tasks';
+const KEY = 'sb_publishable_UAUDiBPQw1pX9lpDHawFlg_A5aY6k3l';
+function headers() {
+  return { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+}
+
+let tasks = [], currentFilter = 'all', currentAssignee = 'all';
+
+// ===== 加载任务 =====
+async function loadTasks() {
+  try {
+    const res = await fetch(API + '?select=*&order=created_at.desc', { headers: headers() });
+    if (!res.ok) throw new Error(res.status);
+    tasks = await res.json();
+  } catch(e) { console.error('加载失败:', e); tasks = []; }
+  updateStats();
+  renderFilters();
+  renderTasks();
+  document.getElementById('updateTime').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+}
+
+function updateStats() {
+  document.getElementById('countUrgent').textContent = tasks.filter(t => t.priority==='urgent' && t.status!=='done').length;
+  document.getElementById('countProgress').textContent = tasks.filter(t => t.status==='progress').length;
+  document.getElementById('countTodo').textContent = tasks.filter(t => t.status==='todo').length;
+  document.getElementById('countDone').textContent = tasks.filter(t => t.status==='done').length;
+}
+
+function renderFilters() {
+  const names = [...new Set(tasks.map(t => t.assignee).filter(Boolean))];
+  const bar = document.querySelectorAll('.filter-bar')[1];
+  bar.innerHTML = '<button data-assignee="all" class="active assignee-btn">所有人</button>' +
+    names.map(a => `<button data-assignee="${a}" class="assignee-btn">${a}</button>`).join('');
+}
+
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  let f = tasks;
+  if (currentFilter === 'todo') f = tasks.filter(t => t.status === 'todo');
+  else if (currentFilter === 'progress') f = tasks.filter(t => t.status === 'progress');
+  else if (currentFilter === 'done') f = tasks.filter(t => t.status === 'done');
+  else if (currentFilter === 'urgent') f = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done');
+  if (currentAssignee !== 'all') f = f.filter(t => t.assignee === currentAssignee);
+
+  if (!f.length) { list.innerHTML = '<div class="empty"><div class="icon">📭</div>暂无任务</div>'; return; }
+
+  list.innerHTML = f.map(t => {
+    const over = t.deadline && new Date(t.deadline) < new Date() && t.status !== 'done';
+    const cls = over ? 'overdue' : t.status;
+    const dl = t.deadline ? new Date(t.deadline).toLocaleDateString('zh-CN') : '';
+    const pb = {urgent:'urgent',important:'important',normal:'normal'}[t.priority]||'normal';
+    const sb = {todo:'todo',progress:'progress',done:'done'}[t.status]||'todo';
+    const pbLabel = {urgent:'紧急',important:'重要',normal:'日常'}[t.priority]||'';
+    const sbLabel = {todo:'待办',progress:'进行中',done:'已完成'}[t.status]||'';
+    return `<div class="task-card ${cls}" onclick="editTask(${t.id})">
+      <div class="top"><span class="title">${esc(t.title)}</span><span class="badge badge-${pb}">${pbLabel}</span></div>
+      <div class="meta"><span>👤 ${esc(t.assignee)}</span><span class="badge badge-${sb}">${sbLabel}</span>
+      ${t.deadline ? `<span class="deadline ${over?'overdue-text':''}">📅 ${dl}</span>` : ''}</div>
+      ${t.progress ? `<div class="progress-text">💬 ${esc(t.progress)}</div>` : ''}</div>`;
+  }).join('');
+}
+
+// ===== 筛选点击 =====
+document.querySelector('.filter-bar').addEventListener('click', e => {
+  if (e.target.dataset.filter) {
+    currentFilter = e.target.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    renderTasks();
+  }
+});
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('assignee-btn')) {
+    currentAssignee = e.target.dataset.assignee;
+    document.querySelectorAll('.assignee-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    renderTasks();
+  }
+});
+
+// ===== 弹窗 =====
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '➕ 新增任务';
+  document.getElementById('editId').value = '';
+  ['fTitle','fAssignee'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fPriority').value = 'normal';
+  document.getElementById('fStatus').value = 'todo';
+  document.getElementById('fDeadline').value = '';
+  document.getElementById('fProgress').value = '';
+  document.getElementById('deleteRow').style.display = 'none';
+  document.getElementById('modal').classList.add('show');
+}
+
+function editTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('modalTitle').textContent = '✏️ 编辑任务';
+  document.getElementById('editId').value = t.id;
+  document.getElementById('fTitle').value = t.title;
+  document.getElementById('fAssignee').value = t.assignee;
+  document.getElementById('fPriority').value = t.priority;
+  document.getElementById('fStatus').value = t.status;
+  document.getElementById('fDeadline').value = t.deadline || '';
+  document.getElementById('fProgress').value = t.progress || '';
+  document.getElementById('deleteRow').style.display = 'flex';
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// ===== 保存 =====
+async function saveTask() {
+  const id = document.getElementById('editId').value;
+  const title = document.getElementById('fTitle').value.trim();
+  const assignee = document.getElementById('fAssignee').value.trim();
+  if (!title || !assignee) { alert('任务标题和经办人为必填项'); return; }
+
+  const payload = {
+    title, assignee,
+    priority: document.getElementById('fPriority').value,
+    status: document.getElementById('fStatus').value,
+    deadline: document.getElementById('fDeadline').value || null,
+    progress: document.getElementById('fProgress').value.trim(),
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    let res;
+    if (id) {
+      res = await fetch(API + '?id=eq.' + id, {
+        method: 'PATCH',
+        headers: headers(),
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(API, {
+        method: 'POST',
+        headers: {...headers(), Prefer: 'return=representation'},
+        body: JSON.stringify(payload)
+      });
+    }
+    if (!res.ok) {
+      const err = await res.text();
+      alert('保存失败: ' + res.status + ' ' + err);
+      return;
+    }
+    closeModal();
+    loadTasks();
+  } catch(e) {
+    alert('网络错误: ' + e.message);
+  }
+}
+
+// ===== 删除 =====
+async function deleteTask() {
+  const id = document.getElementById('editId').value;
+  if (!confirm('确定删除这个任务吗？')) return;
+  try {
+    await fetch(API + '?id=eq.' + id, { method: 'DELETE', headers: headers() });
+    closeModal();
+    loadTasks();
+  } catch(e) {
+    alert('删除失败: ' + e.message);
+  }
+}
+
+// 点弹窗外关闭
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// 启动
+loadTasks();
+</script>
+</body>
+</html>
