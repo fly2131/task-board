@@ -8,10 +8,19 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; background:#f5f6f8; color:#333; min-height:100vh; padding-bottom:80px; }
 
-.header { background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; padding:16px 20px; position:sticky; top:0; z-index:100; }
+.header { background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; padding:14px 20px; position:sticky; top:0; z-index:100; }
+.header .top-row { display:flex; justify-content:space-between; align-items:center; }
 .header h1 { font-size:20px; font-weight:600; }
-.header .sub { font-size:12px; color:#8892a4; margin-top:2px; }
+.header .top-actions { font-size:13px; }
+.header .top-actions span { cursor:pointer; margin-left:12px; opacity:0.85; }
+.header .top-actions span:active { opacity:0.6; }
 
+.tabs { display:flex; gap:0; margin-top:10px; background:rgba(255,255,255,0.1); border-radius:8px; padding:3px; }
+.tab-btn { flex:1; padding:8px; border:none; border-radius:6px; font-size:14px; cursor:pointer; text-align:center; background:transparent; color:rgba(255,255,255,0.7); transition:all 0.2s; }
+.tab-btn.active { background:#fff; color:#1a1a2e; font-weight:600; }
+.tab-btn:not(.active):active { background:rgba(255,255,255,0.15); }
+
+/* 任务模块 */
 .stats { display:flex; gap:10px; padding:12px 16px; overflow-x:auto; }
 .stat-card { flex:1; min-width:80px; background:#fff; border-radius:10px; padding:12px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
 .stat-card .num { font-size:24px; font-weight:700; }
@@ -52,6 +61,30 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 
 .fab { position:fixed; bottom:24px; right:20px; width:52px; height:52px; background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; border:none; border-radius:50%; font-size:28px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:200; }
 
+/* 周记录模块 */
+.week-nav { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 16px; }
+.week-nav button { padding:6px 12px; border:1px solid #ddd; border-radius:6px; background:#fff; font-size:13px; cursor:pointer; white-space:nowrap; }
+.week-nav button:active { background:#eee; }
+.week-nav .week-label { font-size:14px; font-weight:600; text-align:center; min-width:200px; }
+
+.weekly-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; padding:0 16px 12px; }
+@media (max-width:768px) { .weekly-grid { grid-template-columns:1fr; } }
+
+.weekly-card { background:#fff; border-radius:10px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); min-height:120px; }
+.weekly-card .wc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #f0f0f0; }
+.weekly-card .wc-name { font-size:15px; font-weight:600; }
+.weekly-card .wc-edit { font-size:12px; color:#3498db; cursor:pointer; background:none; border:none; }
+.weekly-card .wc-items { list-style:none; }
+.weekly-card .wc-items li { font-size:13px; color:#555; padding:4px 0; line-height:1.5; border-bottom:1px dotted #f0f0f0; }
+.weekly-card .wc-items li:last-child { border-bottom:none; }
+.weekly-card .wc-empty { color:#bbb; font-size:13px; text-align:center; padding:16px 0; }
+
+.weekly-actions { display:flex; gap:10px; padding:8px 16px; }
+.weekly-actions button { flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; background:#fff; font-size:14px; cursor:pointer; }
+.weekly-actions button:active { background:#eee; }
+.weekly-actions .btn-export { background:#1a1a2e; color:#fff; border-color:#1a1a2e; }
+
+/* 弹窗 */
 .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:300; justify-content:center; align-items:flex-end; }
 .modal-overlay.show { display:flex; }
 .modal { background:#fff; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; border-radius:16px 16px 0 0; padding:20px; }
@@ -67,9 +100,21 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 .btn-primary { background:#1a1a2e; color:#fff; }
 .btn-danger { background:#fff; color:#e74c3c; border:1px solid #e74c3c; }
 .btn-secondary { background:#f0f0f0; color:#555; }
+.btn-small { padding:6px 12px; border-radius:6px; border:1px solid #ddd; background:#fff; font-size:12px; cursor:pointer; }
 
 .empty { text-align:center; padding:40px 20px; color:#aaa; }
 .empty .icon { font-size:48px; margin-bottom:8px; }
+
+/* 导出弹窗 */
+.export-section { margin-bottom:14px; }
+.export-section label { display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; padding:6px 0; }
+.export-section input[type="radio"] { width:auto; margin:0; }
+.export-range { margin-top:8px; padding-left:24px; }
+.export-range input[type="date"] { width:auto; padding:6px 10px; font-size:13px; }
+.export-range span { margin:0 6px; font-size:13px; color:#888; }
+.export-people { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding-left:24px; }
+.export-people label { font-size:13px; display:flex; align-items:center; gap:4px; cursor:pointer; }
+.export-people input[type="checkbox"] { width:auto; margin:0; }
 </style>
 </head>
 <body>
@@ -86,33 +131,62 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 <div id="appContent" style="display:none;">
 
 <div class="header">
-  <h1>📋 部门任务看板<span style="float:right;font-size:13px;cursor:pointer;opacity:0.7;">📥 <span onclick="exportCSV()" style="margin-right:12px;">导出</span>🔐 <span onclick="showChangePin()">改密</span></span></h1>
-  <div class="sub" id="updateTime"></div>
+  <div class="top-row">
+    <h1>📋 部门任务看板</h1>
+    <div class="top-actions">
+      <span id="headerExport" onclick="handleExport()">📥 导出</span>
+      <span onclick="showChangePin()">🔐 改密</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tasks">任务看板</button>
+    <button class="tab-btn" data-tab="weekly">📊 周工作记录</button>
+  </div>
 </div>
 
-<div class="stats">
-  <div class="stat-card red"><div class="num" id="countUrgent">0</div><div class="label">紧急</div></div>
-  <div class="stat-card orange"><div class="num" id="countProgress">0</div><div class="label">进行中</div></div>
-  <div class="stat-card blue"><div class="num" id="countTodo">0</div><div class="label">待办</div></div>
-  <div class="stat-card green"><div class="num" id="countDone">0</div><div class="label">已完成</div></div>
+<!-- 任务看板 -->
+<div id="taskSection">
+  <div class="stats">
+    <div class="stat-card red"><div class="num" id="countUrgent">0</div><div class="label">紧急</div></div>
+    <div class="stat-card orange"><div class="num" id="countProgress">0</div><div class="label">进行中</div></div>
+    <div class="stat-card blue"><div class="num" id="countTodo">0</div><div class="label">待办</div></div>
+    <div class="stat-card green"><div class="num" id="countDone">0</div><div class="label">已完成</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <button data-filter="all" class="active">全部</button>
+    <button data-filter="todo">待办</button>
+    <button data-filter="progress">进行中</button>
+    <button data-filter="done">已完成</button>
+    <button data-filter="urgent">🔴 紧急</button>
+  </div>
+  <div class="filter-bar" style="margin-top:-4px;">
+    <button data-assignee="all" class="active assignee-btn">所有人</button>
+  </div>
+
+  <div class="task-list" id="taskList"><div style="text-align:center;padding:20px;color:#aaa;">加载中...</div></div>
+
+  <button class="fab" id="fabAdd" onclick="openAddModal()">+</button>
 </div>
 
-<div class="filter-bar">
-  <button data-filter="all" class="active">全部</button>
-  <button data-filter="todo">待办</button>
-  <button data-filter="progress">进行中</button>
-  <button data-filter="done">已完成</button>
-  <button data-filter="urgent">🔴 紧急</button>
+<!-- 周工作记录 -->
+<div id="weeklySection" style="display:none;">
+  <div class="week-nav">
+    <button onclick="prevWeek()">◀</button>
+    <span class="week-label" id="weekLabel"></span>
+    <button onclick="nextWeek()">▶</button>
+    <button onclick="goThisWeek()" style="color:#3498db;border-color:#3498db;">本周</button>
+  </div>
+
+  <div class="weekly-grid" id="weeklyGrid"></div>
+
+  <div class="weekly-actions">
+    <button class="btn-export" onclick="showExportModal()">📥 导出</button>
+    <button onclick="showTeamMembersModal()">👥 编辑人员</button>
+  </div>
 </div>
-<div class="filter-bar" style="margin-top:-4px;">
-  <button data-assignee="all" class="active assignee-btn">所有人</button>
-</div>
 
-<div class="task-list" id="taskList"><div style="text-align:center;padding:20px;color:#aaa;">加载中...</div></div>
-
-<button class="fab" onclick="openAddModal()">+</button>
-
-<!-- 弹窗 -->
+<!-- 任务编辑弹窗 -->
 <div class="modal-overlay" id="modal">
 <div class="modal">
   <h2 id="modalTitle">新增任务</h2>
@@ -147,18 +221,158 @@ body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 </div>
 </div>
 
+<!-- 周记录编辑弹窗 -->
+<div class="modal-overlay" id="weeklyModal">
+<div class="modal">
+  <h2 id="weeklyModalTitle">编辑工作记录</h2>
+  <div class="form-group">
+    <label>工作条目</label>
+    <div id="weeklyItemList" style="margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="fWeeklyItem" placeholder="新增一条工作事项…" style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+      <button onclick="addWeeklyItem()" style="padding:8px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:13px;white-space:nowrap;">添加</button>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="closeWeeklyModal()">取消</button>
+    <button class="btn btn-primary" onclick="saveWeeklyRecord()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- 导出周记录弹窗 -->
+<div class="modal-overlay" id="exportModal">
+<div class="modal">
+  <h2>📥 导出周工作记录</h2>
+  <div class="export-section">
+    <label><input type="radio" name="exportType" value="all" checked onchange="toggleExportRange()"> 导出全部历史记录</label>
+    <label><input type="radio" name="exportType" value="range" onchange="toggleExportRange()"> 按时间范围导出</label>
+  </div>
+  <div class="export-range" id="exportRange" style="display:none;">
+    <label style="font-size:13px;color:#888;">起始周（周一）：</label>
+    <input type="date" id="exportStart">
+    <label style="font-size:13px;color:#888;margin-top:8px;">结束周（周一）：</label>
+    <input type="date" id="exportEnd">
+  </div>
+  <div class="form-group" style="margin-top:12px;">
+    <label>人员筛选：</label>
+    <div class="export-people" id="exportPeople"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="closeExportModal()">取消</button>
+    <button class="btn btn-primary" onclick="doExportCSV()">导出 CSV</button>
+  </div>
+</div>
+</div>
+
+<!-- 编辑人员弹窗 -->
+<div class="modal-overlay" id="teamModal">
+<div class="modal">
+  <h2>👥 编辑人员</h2>
+  <div class="form-group">
+    <label>每行一个人员姓名：</label>
+    <textarea id="fTeamMembers" style="height:120px;" placeholder="张三&#10;李四&#10;王五"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="closeTeamModal()">取消</button>
+    <button class="btn btn-primary" onclick="saveTeamMembers()">保存</button>
+  </div>
+</div>
+</div>
+
 </div><!-- appContent -->
 
 <script>
-// ===== Supabase =====
+// ===== Supabase 配置 =====
 var BASE = 'https://axnoahxxfeadkondeehl.supabase.co/rest/v1';
 var API = BASE + '/tasks';
 var API_SETTINGS = BASE + '/settings';
+var API_WEEKLY = BASE + '/weekly_records';
 var KEY = 'sb_publishable_UAUDiBPQw1pX9lpDHawFlg_A5aY6k3l';
 function hdrs() { return { apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json' }; }
 
+// ===== 全局状态 =====
 var tasks=[], currentFilter='all', currentAssignee='all', logEntries=[];
+var weeklyRecords=[], currentWeekStart='', currentTab='tasks', teamMembers=[];
+var weeklyItems=[], editingWeeklyAssignee='';
 
+// ===== 初始化 =====
+function initCurrentWeek() {
+  var now = new Date();
+  var day = now.getDay();
+  var diff = now.getDate() - day + (day===0?-6:1);
+  var mon = new Date(now.getFullYear(), now.getMonth(), diff);
+  currentWeekStart = formatDate(mon);
+}
+
+function formatDate(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function formatDateCN(d) {
+  return String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+}
+
+function getMondayFromStr(str) {
+  var parts = str.split('-');
+  return new Date(+parts[0], +parts[1]-1, +parts[2]);
+}
+
+function getWeekNumber(monday) {
+  var d = new Date(monday);
+  var jan4 = new Date(d.getFullYear(), 0, 4);
+  var jan4Day = jan4.getDay() || 7;
+  var firstMon = new Date(jan4);
+  firstMon.setDate(jan4.getDate() - jan4Day + 1);
+  if (d < firstMon) {
+    // use previous year's first Monday
+    jan4 = new Date(d.getFullYear()-1, 0, 4);
+    jan4Day = jan4.getDay() || 7;
+    firstMon = new Date(jan4);
+    firstMon.setDate(jan4.getDate() - jan4Day + 1);
+  }
+  var diff = Math.round((d - firstMon) / (7*86400000));
+  return diff + 1;
+}
+
+function formatWeekLabel(monday) {
+  var d = getMondayFromStr(monday);
+  var sun = new Date(d);
+  sun.setDate(sun.getDate()+6);
+  var wn = getWeekNumber(d);
+  return d.getFullYear()+'年 第'+wn+'周 ('+formatDateCN(d)+' - '+formatDateCN(sun)+')';
+}
+
+function changeWeek(offset) {
+  var d = getMondayFromStr(currentWeekStart);
+  d.setDate(d.getDate() + offset*7);
+  currentWeekStart = formatDate(d);
+  loadWeeklyPage();
+}
+
+function prevWeek() { changeWeek(-1); }
+function nextWeek() { changeWeek(1); }
+function goThisWeek() { initCurrentWeek(); loadWeeklyPage(); }
+
+// ===== Tab 切换 =====
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.getElementById('taskSection').style.display = tab==='tasks'?'block':'none';
+  document.getElementById('weeklySection').style.display = tab==='weekly'?'block':'none';
+  document.getElementById('fabAdd').style.display = tab==='tasks'?'block':'none';
+  document.getElementById('headerExport').textContent = tab==='tasks'?'📥 导出':'📥 导出';
+  if (tab === 'weekly') { loadWeeklyPage(); }
+  if (tab === 'tasks') { loadTasks(); }
+}
+
+document.querySelector('.tabs').addEventListener('click', function(e){
+  if (e.target.dataset.tab) switchTab(e.target.dataset.tab);
+});
+
+// ===== 任务模块（保持不变） =====
 async function loadTasks() {
   try {
     var res = await fetch(API + '?select=*&order=created_at.desc', { headers:hdrs() });
@@ -168,7 +382,8 @@ async function loadTasks() {
   updateStats();
   renderFilters();
   renderTasks();
-  document.getElementById('updateTime').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+  syncTeamMembersFromTasks();
+  document.getElementById('updateTime') && (document.getElementById('updateTime').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN'));
 }
 
 function updateStats() {
@@ -228,7 +443,7 @@ function renderTasks() {
   }).join('');
 }
 
-// 筛选
+// 任务筛选
 document.querySelector('.filter-bar').addEventListener('click', function(e){
   if (e.target.dataset.filter) {
     currentFilter = e.target.dataset.filter;
@@ -246,7 +461,7 @@ document.addEventListener('click', function(e){
   }
 });
 
-// 弹窗
+// 任务弹窗
 function openAddModal() {
   document.getElementById('modalTitle').textContent = '➕ 新增任务';
   document.getElementById('editId').value = '';
@@ -284,7 +499,7 @@ function editTask(id) {
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-// 日志管理
+// 任务日志管理
 function renderLogList() {
   var container = document.getElementById('logList');
   if (!logEntries.length) { container.innerHTML = '<p style="color:#aaa;font-size:13px;">暂无记录</p>'; return; }
@@ -308,22 +523,17 @@ function addLogEntry() {
   renderLogList();
 }
 
-function removeLogEntry(i) {
-  logEntries.splice(i, 1);
-  renderLogList();
-}
+function removeLogEntry(i) { logEntries.splice(i, 1); renderLogList(); }
 
 async function saveTask() {
   var id = document.getElementById('editId').value;
   var title = document.getElementById('fTitle').value.trim();
   var assignee = document.getElementById('fAssignee').value.trim();
   if (!title || !assignee) { alert('任务标题和经办人为必填项'); return; }
-  // 收集日志中新增但未添加的内容
   var pending = document.getElementById('fLog').value.trim();
   if (pending) addLogEntry();
   var payload = {
-    title: title,
-    assignee: assignee,
+    title: title, assignee: assignee,
     content: document.getElementById('fContent').value.trim(),
     priority: document.getElementById('fPriority').value,
     status: document.getElementById('fStatus').value,
@@ -331,7 +541,6 @@ async function saveTask() {
     progress: logEntries.join('\n'),
     updated_at: new Date().toISOString()
   };
-
   try {
     var res;
     if (id) {
@@ -359,7 +568,283 @@ document.getElementById('modal').addEventListener('click', function(e){ if (e.ta
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-// ===== PIN =====
+// ===== 任务 CSV 导出 =====
+function exportCSV() {
+  var BOM = '﻿';
+  var headers = ['标题','经办人','任务内容','优先级','状态','截止日期','任务记录','创建时间','更新时间'];
+  var rows = tasks.map(function(t){
+    return [t.title, t.assignee, t.content||'', t.priority, t.status, t.deadline||'',
+      (t.progress||'').replace(/\n/g,' | '), t.created_at||'', t.updated_at||''];
+  });
+  var csv = BOM + headers.join(',') + '\n' + rows.map(function(r){
+    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '任务导出_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function handleExport() {
+  if (currentTab === 'tasks') { exportCSV(); }
+  else { showExportModal(); }
+}
+
+// ===== 人员管理 =====
+async function loadTeamMembers() {
+  try {
+    var res = await fetch(API_SETTINGS + '?key=eq.team_members&select=value', { headers:hdrs() });
+    var data = await res.json();
+    if (data.length && data[0].value) {
+      teamMembers = data[0].value.split(',').filter(function(s){ return s.trim(); });
+    } else {
+      teamMembers = [];
+    }
+  } catch(e) { teamMembers = []; }
+}
+
+async function syncTeamMembersFromTasks() {
+  var fromTasks = tasks.map(function(t){ return t.assignee; }).filter(function(v,i,a){ return v && a.indexOf(v)===i; });
+  await loadTeamMembers();
+  var changed = false;
+  fromTasks.forEach(function(name){
+    if (teamMembers.indexOf(name) === -1) { teamMembers.push(name); changed = true; }
+  });
+  if (changed) await saveTeamMembersToDB();
+}
+
+async function saveTeamMembersToDB() {
+  try {
+    await fetch(API_SETTINGS + '?key=eq.team_members', {
+      method:'PATCH', headers:Object.assign({}, hdrs(), {Prefer:'return=representation'}),
+      body:JSON.stringify({value: teamMembers.join(',')})
+    });
+  } catch(e) {}
+}
+
+function showTeamMembersModal() {
+  document.getElementById('fTeamMembers').value = teamMembers.join('\n');
+  document.getElementById('teamModal').classList.add('show');
+}
+
+function closeTeamModal() { document.getElementById('teamModal').classList.remove('show'); }
+
+async function saveTeamMembers() {
+  var raw = document.getElementById('fTeamMembers').value.trim();
+  teamMembers = raw ? raw.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s; }) : [];
+  await saveTeamMembersToDB();
+  closeTeamModal();
+  renderWeeklyGrid();
+}
+
+document.getElementById('teamModal').addEventListener('click', function(e){ if (e.target === this) closeTeamModal(); });
+
+// ===== 周记录模块 =====
+async function loadWeeklyRecords() {
+  try {
+    var res = await fetch(API_WEEKLY + '?week_start=eq.' + currentWeekStart + '&select=*', { headers:hdrs() });
+    if (!res.ok) throw new Error(res.status);
+    weeklyRecords = await res.json();
+  } catch(e) { console.error(e); weeklyRecords = []; }
+}
+
+function parseItems(str) {
+  if (!str) return [];
+  return str.split('\n').filter(function(s){ return s.trim(); });
+}
+
+function renderWeeklyGrid() {
+  var grid = document.getElementById('weeklyGrid');
+  if (!teamMembers.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="icon">👥</div>暂未设置人员，点击下方「编辑人员」添加</div>';
+    return;
+  }
+  grid.innerHTML = teamMembers.map(function(name){
+    var rec = weeklyRecords.find(function(r){ return r.assignee === name; });
+    var items = rec ? parseItems(rec.items) : [];
+    var itemsHtml = '';
+    if (items.length > 0) {
+      itemsHtml = '<ul class="wc-items">' + items.map(function(item, i){
+        return '<li>'+String(i+1)+'. '+esc(item)+'</li>';
+      }).join('') + '</ul>';
+    } else {
+      itemsHtml = '<div class="wc-empty">📝 暂无记录</div>';
+    }
+    return '<div class="weekly-card">'
+      + '<div class="wc-header"><span class="wc-name">👤 '+esc(name)+'</span>'
+      + '<button class="wc-edit" onclick="openWeeklyEdit(\''+esc(name)+'\')">编辑</button></div>'
+      + itemsHtml
+      + '</div>';
+  }).join('');
+}
+
+async function loadWeeklyPage() {
+  document.getElementById('weekLabel').textContent = formatWeekLabel(currentWeekStart);
+  await loadTeamMembers();
+  await loadWeeklyRecords();
+  renderWeeklyGrid();
+}
+
+// 周记录编辑
+function openWeeklyEdit(name) {
+  editingWeeklyAssignee = name;
+  var rec = weeklyRecords.find(function(r){ return r.assignee === name; });
+  weeklyItems = rec ? parseItems(rec.items) : [];
+  document.getElementById('weeklyModalTitle').textContent = '✏️ '+name+' — '+formatWeekLabel(currentWeekStart);
+  document.getElementById('fWeeklyItem').value = '';
+  renderWeeklyItemList();
+  document.getElementById('weeklyModal').classList.add('show');
+}
+
+function closeWeeklyModal() { document.getElementById('weeklyModal').classList.remove('show'); }
+
+function renderWeeklyItemList() {
+  var container = document.getElementById('weeklyItemList');
+  if (!weeklyItems.length) { container.innerHTML = '<p style="color:#aaa;font-size:13px;">暂无工作事项</p>'; return; }
+  container.innerHTML = weeklyItems.map(function(item, i){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px;">'
+      + '<span style="flex:1;">'+esc(item)+'</span>'
+      + '<span onclick="removeWeeklyItem('+i+')" style="color:#e74c3c;cursor:pointer;margin-left:8px;font-size:18px;line-height:1;">×</span>'
+      + '</div>';
+  }).join('');
+}
+
+function addWeeklyItem() {
+  var input = document.getElementById('fWeeklyItem');
+  var text = input.value.trim();
+  if (!text) return;
+  weeklyItems.push(text);
+  input.value = '';
+  renderWeeklyItemList();
+}
+
+function removeWeeklyItem(i) { weeklyItems.splice(i, 1); renderWeeklyItemList(); }
+
+async function saveWeeklyRecord() {
+  var items = weeklyItems.join('\n');
+  var existing = weeklyRecords.find(function(r){ return r.assignee === editingWeeklyAssignee; });
+  var payload = {
+    assignee: editingWeeklyAssignee,
+    week_start: currentWeekStart,
+    items: items,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    var res;
+    if (existing) {
+      res = await fetch(API_WEEKLY + '?id=eq.' + existing.id, { method:'PATCH', headers:hdrs(), body:JSON.stringify(payload) });
+    } else {
+      res = await fetch(API_WEEKLY, { method:'POST', headers:Object.assign({}, hdrs(), {Prefer:'return=representation'}), body:JSON.stringify(payload) });
+    }
+    if (!res.ok) { var txt = await res.text(); alert('保存失败: '+res.status+' '+txt); return; }
+    closeWeeklyModal();
+    loadWeeklyPage();
+  } catch(e) { alert('网络错误: '+e.message); }
+}
+
+document.getElementById('weeklyModal').addEventListener('click', function(e){ if (e.target === this) closeWeeklyModal(); });
+
+// 周记录输入框回车添加
+document.getElementById('fWeeklyItem').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') { addWeeklyItem(); }
+});
+
+// ===== 导出周记录 =====
+function showExportModal() {
+  document.getElementById('exportModal').classList.add('show');
+  // 初始化人员复选框
+  var container = document.getElementById('exportPeople');
+  container.innerHTML = teamMembers.map(function(name){
+    return '<label><input type="checkbox" value="'+esc(name)+'" checked> '+esc(name)+'</label>';
+  }).join('');
+  // 默认时间范围
+  document.getElementById('exportStart').value = '';
+  document.getElementById('exportEnd').value = '';
+  document.querySelector('input[name="exportType"][value="all"]').checked = true;
+  document.getElementById('exportRange').style.display = 'none';
+}
+
+function closeExportModal() { document.getElementById('exportModal').classList.remove('show'); }
+
+function toggleExportRange() {
+  var isRange = document.querySelector('input[name="exportType"]:checked').value === 'range';
+  document.getElementById('exportRange').style.display = isRange ? 'block' : 'none';
+}
+
+async function doExportCSV() {
+  var isAll = document.querySelector('input[name="exportType"]:checked').value === 'all';
+  var selectedPeople = [];
+  document.querySelectorAll('#exportPeople input[type="checkbox"]:checked').forEach(function(cb){
+    selectedPeople.push(cb.value);
+  });
+  if (!selectedPeople.length) { alert('请至少选择一位人员'); return; }
+
+  var startDate = document.getElementById('exportStart').value;
+  var endDate = document.getElementById('exportEnd').value;
+
+  // 获取数据
+  var allRecords = [];
+  try {
+    if (isAll) {
+      var res = await fetch(API_WEEKLY + '?select=*&order=week_start.asc&limit=5000', { headers:hdrs() });
+      if (res.ok) allRecords = await res.json();
+    } else {
+      if (!startDate || !endDate) { alert('请选择起始周和结束周'); return; }
+      var res = await fetch(API_WEEKLY + '?week_start=gte.'+startDate+'&week_start=lte.'+endDate+'&select=*&order=week_start.asc&limit=5000', { headers:hdrs() });
+      if (res.ok) allRecords = await res.json();
+    }
+  } catch(e) { alert('获取数据失败'); return; }
+
+  if (!allRecords.length) { alert('没有符合条件的数据'); return; }
+
+  // 收集所有周
+  var weeks = [];
+  allRecords.forEach(function(r){
+    if (weeks.indexOf(r.week_start) === -1) weeks.push(r.week_start);
+  });
+  weeks.sort();
+
+  // 构建矩阵：人员 × 周
+  var BOM = '﻿';
+  var headers = ['人员'];
+  weeks.forEach(function(w){
+    var d = getMondayFromStr(w);
+    var sun = new Date(d);
+    sun.setDate(sun.getDate()+6);
+    var wn = getWeekNumber(d);
+    headers.push('第'+wn+'周('+formatDateCN(d)+'-'+formatDateCN(sun)+')');
+  });
+
+  var rows = [];
+  selectedPeople.forEach(function(name){
+    var row = [name];
+    weeks.forEach(function(w){
+      var rec = allRecords.find(function(r){ return r.assignee===name && r.week_start===w; });
+      row.push(rec ? rec.items.replace(/\n/g,' | ') : '');
+    });
+    rows.push(row);
+  });
+
+  var csv = BOM + headers.join(',') + '\n' + rows.map(function(row){
+    return row.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\n');
+
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '周工作记录导出_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  closeExportModal();
+}
+
+document.getElementById('exportModal').addEventListener('click', function(e){ if (e.target === this) closeExportModal(); });
+
+// ===== PIN 管理 =====
 var APP_PIN = null;
 async function checkPin(pin) {
   try {
@@ -379,7 +864,9 @@ async function checkPin(pin) {
       if (await checkPin(input.value)) {
         document.getElementById('lockScreen').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
+        initCurrentWeek();
         loadTasks();
+        loadTeamMembers();
       } else {
         err.style.display = 'block';
         input.value = '';
@@ -388,27 +875,6 @@ async function checkPin(pin) {
     err.style.display = 'none';
   });
 })();
-
-function exportCSV() {
-  var BOM = '﻿';
-  var headers = ['标题','经办人','任务内容','优先级','状态','截止日期','任务记录','创建时间','更新时间'];
-  var rows = tasks.map(function(t){
-    return [
-      t.title, t.assignee, t.content||'', t.priority, t.status, t.deadline||'',
-      (t.progress||'').replace(/\n/g,' | '), t.created_at||'', t.updated_at||''
-    ];
-  });
-  var csv = BOM + headers.join(',') + '\n' + rows.map(function(r){
-    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
-  }).join('\n');
-  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = '任务导出_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 function showChangePin() {
   var oldPin = prompt('请输入当前密码：');
