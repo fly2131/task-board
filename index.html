@@ -701,15 +701,55 @@ function openWeeklyEdit(name) {
 
 function closeWeeklyModal() { document.getElementById('weeklyModal').classList.remove('show'); }
 
+var weeklyEditingIdx = -1;
+
 function renderWeeklyItemList() {
   var container = document.getElementById('weeklyItemList');
+  weeklyEditingIdx = -1;
   if (!weeklyItems.length) { container.innerHTML = '<p style="color:#aaa;font-size:13px;">暂无工作事项</p>'; return; }
   container.innerHTML = weeklyItems.map(function(item, i){
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px;">'
-      + '<span style="flex:1;">'+esc(item)+'</span>'
-      + '<span onclick="removeWeeklyItem('+i+')" style="color:#e74c3c;cursor:pointer;margin-left:8px;font-size:18px;line-height:1;">×</span>'
+    return '<div class="weekly-item-row" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px;">'
+      + '<span style="flex:1;cursor:pointer;padding:4px 0;" onclick="editWeeklyItem('+i+')" title="点击编辑">'+esc(item)+'</span>'
+      + '<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">'
+      + '<span onclick="editWeeklyItem('+i+')" style="color:#3498db;cursor:pointer;font-size:14px;" title="编辑">✎</span>'
+      + '<span onclick="removeWeeklyItem('+i+')" style="color:#e74c3c;cursor:pointer;font-size:18px;line-height:1;" title="删除">×</span>'
+      + '</div>'
       + '</div>';
   }).join('');
+}
+
+function editWeeklyItem(i) {
+  weeklyEditingIdx = i;
+  var container = document.getElementById('weeklyItemList');
+  var rows = container.querySelectorAll('.weekly-item-row');
+  if (!rows[i]) return;
+  var text = weeklyItems[i];
+  rows[i].innerHTML = '<div style="display:flex;gap:6px;align-items:center;width:100%;">'
+    + '<input id="editItemInput" style="flex:1;padding:6px 8px;border:1px solid #3498db;border-radius:6px;font-size:13px;outline:none;">'
+    + '<button onmousedown="event.preventDefault();saveWeeklyItemEdit('+i+')" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">✓</button>'
+    + '</div>';
+  var input = document.getElementById('editItemInput');
+  input.value = text;
+  input.focus();
+  input.select();
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); saveWeeklyItemEdit(i); }
+    if (e.key === 'Escape') { renderWeeklyItemList(); }
+  });
+  input.addEventListener('blur', function(){
+    setTimeout(function(){
+      if (document.getElementById('editItemInput')) { saveWeeklyItemEdit(i); }
+    }, 150);
+  });
+}
+
+function saveWeeklyItemEdit(i) {
+  var input = document.getElementById('editItemInput');
+  if (input) {
+    var val = input.value.trim();
+    if (val) { weeklyItems[i] = val; }
+  }
+  renderWeeklyItemList();
 }
 
 function addWeeklyItem() {
